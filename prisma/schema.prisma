@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Device {
+  id          Int        @id @default(autoincrement())
+  name        String     @db.VarChar(255)
+  price       Int
+  categoryId  Int
+  brandId     Int
+  image       String?    @default("https://avatars.mds.yandex.net/i?id=ead1e9fcb2b66b7c2faa777282920ecf489b979d-10874712-images-thumbs&n=13")
+  color       String[]
+  basketId    Int?
+  count       Int        @default(0)
+  purchasedId Int?
+  Basket      Basket?    @relation(fields: [basketId], references: [id])
+  brand       Brand      @relation(fields: [brandId], references: [id])
+  category    Category   @relation(fields: [categoryId], references: [id])
+  Purchased   Purchased? @relation(fields: [purchasedId], references: [id])
+}
+
+model Category {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  devicesCount Int      @default(0)
+  devices      Device[]
+}
+
+model Brand {
+  id           Int      @id @default(autoincrement())
+  name         String   @db.VarChar(255)
+  devicesCount Int      @default(0)
+  devices      Device[]
+}
+
+model User {
+  id        Int         @id @default(autoincrement())
+  email     String      @unique
+  name      String?
+  password  String
+  isAdmin   Boolean     @default(false)
+  voucherId Int?
+  Basket    Basket[]
+  Purchased Purchased[]
+  Voucher   Voucher?    @relation(fields: [voucherId], references: [id])
+  Wallet    Wallet[]
+}
+
+model Wallet {
+  id     Int  @id @default(autoincrement())
+  cash   Int  @default(0)
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+}
+
+model Basket {
+  id           Int      @id @default(autoincrement())
+  devicesCount Int      @default(0)
+  userId       Int
+  user         User     @relation(fields: [userId], references: [id])
+  devices      Device[]
+}
+
+model Purchased {
+  id     Int      @id @default(autoincrement())
+  count  Int      @default(0)
+  userId Int
+  goods  Device[]
+  user   User     @relation(fields: [userId], references: [id])
+}
+
+model Voucher {
+  id    Int    @id @default(autoincrement())
+  code  String @unique
+  cash  Int
+  users User[]
+}
